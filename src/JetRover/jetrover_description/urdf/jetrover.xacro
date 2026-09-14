@@ -32,4 +32,5 @@
     <!-- <xacro:include filename="$(find jetrover_description)/urdf/connect.urdf.xacro"/> -->
     <!-- <xacro:include filename="$(find jetrover_description)/urdf/arm.urdf.xacro"/> -->
     <!-- <xacro:include filename="$(find jetrover_description)/urdf/gripper.urdf.xacro"/> -->
+    <xacro:include filename="$(find jetrover_description)/urdf/jetrover_gazebo.xacro"/>
 </robot>

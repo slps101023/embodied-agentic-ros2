@@ -24,7 +24,7 @@ def generate_launch_description():
     )
     set_machine_env = SetEnvironmentVariable(
         name='MACHINE_TYPE', 
-        value=os.environ.get('MACHINE_TYPE', 'jetrover')
+        value=os.environ.get('MACHINE_TYPE', 'JetRover_Mecanum')
     )
 
     # 3. 動態轉譯 Xacro 檔案為 URDF
@@ -60,6 +60,21 @@ def generate_launch_description():
         output='screen'
     )
 
+    ros_gz_bridge = Node(
+        package='ros_gz_bridge',
+        executable='parameter_bridge',
+        arguments=[
+            # cmd_vel 需要雙向控制，保持 @
+            '/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
+            # 里程計、雷達與關節狀態只需要 GZ -> ROS (改用 [ 符號)
+            '/odom@nav_msgs/msg/Odometry[gz.msgs.Odometry',
+            '/scan@sensor_msgs/msg/LaserScan[gz.msgs.LaserScan',
+            '/tf@tf2_msgs/msg/TFMessage[gz.msgs.Pose_V',
+            '/joint_states@sensor_msgs/msg/JointState[gz.msgs.Model',
+        ],
+        output='screen'
+    )
+
     # 7. ros2_control Controller Spawner 節點
     joint_state_broadcaster_spawner = Node(
         package='controller_manager',
@@ -82,6 +97,17 @@ def generate_launch_description():
         output='screen'
     )
 
+    rviz_config_file = os.path.join(pkg_share, 'rviz', 'view.rviz')
+    rviz_args = ['-d', rviz_config_file] if os.path.exists(rviz_config_file) else []
+    
+    rviz_node = Node(
+        package='rviz2',
+        executable='rviz2',
+        name='rviz2',
+        output='screen',
+        arguments=rviz_args
+    )
+
     return LaunchDescription([
         set_gz_resource_path,
         set_lidar_env,
@@ -89,9 +115,11 @@ def generate_launch_description():
         gazebo,
         robot_state_publisher,
         spawn_robot,
-        joint_state_broadcaster_spawner,
-        arm_controller_spawner,
-        gripper_controller_spawner
+        ros_gz_bridge,
+        # joint_state_broadcaster_spawner,
+        # arm_controller_spawner,
+        # gripper_controller_spawner
+        rviz_node
     ])
 
 if __name__ == '__main__':
