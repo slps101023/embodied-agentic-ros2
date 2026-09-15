@@ -27,10 +27,13 @@
     </xacro:if>
 
     <xacro:include filename="$(find jetrover_description)/urdf/imu.urdf.xacro"/>
-    <!-- <xacro:include filename="$(find jetrover_description)/urdf/depth_camera.urdf.xacro"/> -->
+    <xacro:include filename="$(find jetrover_description)/urdf/depth_camera.urdf.xacro"/>
     <xacro:include filename="$(find jetrover_description)/urdf/common.urdf.xacro"/>
-    <!-- <xacro:include filename="$(find jetrover_description)/urdf/connect.urdf.xacro"/> -->
-    <!-- <xacro:include filename="$(find jetrover_description)/urdf/arm.urdf.xacro"/> -->
-    <!-- <xacro:include filename="$(find jetrover_description)/urdf/gripper.urdf.xacro"/> -->
+    <xacro:include filename="$(find jetrover_description)/urdf/connect.urdf.xacro"/>
+    <xacro:include filename="$(find jetrover_description)/urdf/arm.urdf.xacro"/>
+    <xacro:include filename="$(find jetrover_description)/urdf/gripper.urdf.xacro"/>
+    <xacro:include filename="$(find jetrover_description)/urdf/jetrover.ros2_control.xacro"/>
     <xacro:include filename="$(find jetrover_description)/urdf/jetrover_gazebo.xacro"/>
+
+    <xacro:jetrover_ros2_control name="GazeboSimSystem" initial_positions_file="$(find jetrover_description)/config/initial_positions.yaml" />
 </robot>

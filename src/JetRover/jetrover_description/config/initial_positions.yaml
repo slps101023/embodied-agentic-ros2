@@ -1,0 +1,9 @@
+# Default initial positions for jetrover's ros2_control fake system
+
+initial_positions:
+  joint1: 0.0
+  joint2: 0.4272
+  joint3: 1.2124
+  joint4: 0.8891
+  joint5: 0
+  r_joint: 0
