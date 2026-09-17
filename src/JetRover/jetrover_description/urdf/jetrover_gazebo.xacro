@@ -10,8 +10,8 @@
       <back_left_joint>wheel_left_back_joint</back_left_joint>
       <front_right_joint>wheel_right_front_joint</front_right_joint>
       <back_right_joint>wheel_right_back_joint</back_right_joint>
-      <wheel_separation>0.224</wheel_separation>
-      <wheel_base>0.195</wheel_base>
+      <wheel_separation>0.22426</wheel_separation>
+      <wheel_base>0.19503</wheel_base>
       <wheel_radius>0.048</wheel_radius>
       <topic>/cmd_vel</topic>
       <odom_topic>/odom</odom_topic>
@@ -19,6 +19,11 @@
       <frame_id>odom</frame_id>
       <child_frame_id>base_footprint</child_frame_id>
     </plugin>
+  </gazebo>
+
+  <gazebo reference="wheel_left_front_link">
+    <mu1>0.2</mu1>
+    <mu2>0.2</mu2>
   </gazebo>
 
   <!-- 2. 輪子關節狀態廣播外掛 (Joint State Publisher) -->
