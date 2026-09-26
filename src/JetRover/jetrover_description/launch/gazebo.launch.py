@@ -68,7 +68,7 @@ def generate_launch_description():
         executable='parameter_bridge',
         arguments=[
             # cmd_vel 需要雙向控制，保持 @
-            '/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
+            '/cmd_vel_twist@geometry_msgs/msg/Twist@gz.msgs.Twist',
             # 里程計、雷達與關節狀態只需要 GZ -> ROS (改用 [ 符號)
             '/odom@nav_msgs/msg/Odometry[gz.msgs.Odometry',
             '/scan@sensor_msgs/msg/LaserScan[gz.msgs.LaserScan',

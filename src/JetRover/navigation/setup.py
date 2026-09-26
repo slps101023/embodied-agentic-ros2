@@ -16,6 +16,7 @@ setup(
         (os.path.join('share', package_name, 'launch/include'), glob(os.path.join('launch/include', '*.*'))),
         (os.path.join('share', package_name, 'config'), glob(os.path.join('config', '*.*'))),
         (os.path.join('share', package_name, 'rviz'), glob(os.path.join('rviz', '*.*'))),
+        
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -25,6 +26,7 @@ setup(
     license='TODO: License declaration',
     entry_points={
         'console_scripts': [
+            'twist_stamped_to_twist = navigation.twist_stamped_to_twist:main',
         ],
     },
 )
