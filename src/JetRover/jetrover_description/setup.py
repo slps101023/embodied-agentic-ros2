@@ -22,6 +22,7 @@ setup(
         (os.path.join('share', package_name, 'meshes/mecanum'), glob(os.path.join('meshes/mecanum', '*.*'))),
         (os.path.join('share', package_name, 'meshes/tank'), glob(os.path.join('meshes/tank', '*.*'))),
         (os.path.join('share', package_name, 'worlds'), glob(os.path.join('worlds', '*.*'))),
+        (os.path.join('share', package_name, 'config'), glob(os.path.join('config', '*.*'))),
     ],
     package_data={'': ['py.typed']},
     install_requires=['setuptools'],
