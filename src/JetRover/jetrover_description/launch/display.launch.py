@@ -5,10 +5,20 @@ from launch_ros.actions import Node
 from launch import LaunchDescription, LaunchService
 from launch.substitutions import Command, LaunchConfiguration
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.actions import DeclareLaunchArgument, TimerAction, IncludeLaunchDescription, ExecuteProcess
+from launch.actions import DeclareLaunchArgument, TimerAction, IncludeLaunchDescription, ExecuteProcess, SetEnvironmentVariable
 from launch.conditions import IfCondition
 
 def generate_launch_description():
+
+    set_lidar_env = SetEnvironmentVariable(
+        name='LIDAR_TYPE', 
+        value=os.environ.get('LIDAR_TYPE', 'A1')
+    )
+    set_machine_env = SetEnvironmentVariable(
+        name='MACHINE_TYPE', 
+        value=os.environ.get('MACHINE_TYPE', 'JetRover_Mecanum')
+    )
+
     # compiled = LaunchConfiguration('need_compile', default='True')
     namespace = LaunchConfiguration('namespace', default='')
     use_namespace = LaunchConfiguration('use_namespace', default='false')
@@ -68,6 +78,8 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
+        set_lidar_env,
+        set_machine_env,
         frame_prefix_arg,
         use_sim_time_arg,
         namespace_arg,
