@@ -18,7 +18,10 @@ def generate_launch_description():
                 "launch",
                 "gazebo.launch.py",
             )
-        )
+        ),
+        launch_arguments={
+            "use_nav2": "true",
+        }.items(),
     )
 
     navigation = IncludeLaunchDescription(
@@ -39,21 +42,6 @@ def generate_launch_description():
         output="screen",
     )
 
-    bridge = Node(
-        package="ros_gz_bridge",
-        executable="parameter_bridge",
-        name="ros_gz_bridge",
-        parameters=[
-            {
-                "config_file": os.path.join(
-                    jetrover_share,
-                    "config",
-                    "bridge.yaml",
-                )
-            }
-        ],
-        output="screen",
-    )
 
     return LaunchDescription(
         [
@@ -70,7 +58,6 @@ def generate_launch_description():
                 period=5.0,
                 actions=[
                     twist_converter,
-                    bridge,
                 ],
             ),
         ]
