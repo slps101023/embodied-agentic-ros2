@@ -1,14 +1,25 @@
 import os
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription, LaunchService
-from launch.actions import AppendEnvironmentVariable, SetEnvironmentVariable, IncludeLaunchDescription, TimerAction
+from launch.actions import AppendEnvironmentVariable, IncludeLaunchDescription, TimerAction, DeclareLaunchArgument
+from launch.substitutions import LaunchConfiguration
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import Command
 from launch_ros.actions import Node
+from launch.conditions import IfCondition, UnlessCondition
 
 def generate_launch_description():
     pkg_share = get_package_share_directory('jetrover_description')
     ros_gz_sim_share = get_package_share_directory('ros_gz_sim')
+    ros_gz_bridge_nav2_config_file = os.path.join(pkg_share, 'config', 'bridge.yaml')
+
+    use_nav2_arg = DeclareLaunchArgument(
+        'use_nav2',
+        default_value='false',
+        description='Whether to use Nav2 (switches to YAML config)'
+    )
+
+    use_nav2 = LaunchConfiguration('use_nav2')
 
     # 1. 補全 Gazebo 模型資源搜尋路徑
     install_share_path = os.path.abspath(os.path.join(pkg_share, '..'))
@@ -17,30 +28,17 @@ def generate_launch_description():
         value=install_share_path
     )
 
-    # 2. 設定預設環境變數
-    set_lidar_env = SetEnvironmentVariable(
-        name='LIDAR_TYPE', 
-        value=os.environ.get('LIDAR_TYPE', 'A1')
-    )
-    set_machine_env = SetEnvironmentVariable(
-        name='MACHINE_TYPE', 
-        value=os.environ.get('MACHINE_TYPE', 'JetRover_Mecanum')
-    )
-
-    # 3. 動態轉譯 Xacro 檔案為 URDF
-    xacro_file = os.path.join(pkg_share, 'urdf', 'jetrover.xacro')
-    robot_description_content = Command(['xacro ', xacro_file])
-
-    # 4. 啟動 robot_state_publisher 節點
-    robot_state_publisher = Node(
-        package='robot_state_publisher',
-        executable='robot_state_publisher',
-        name='robot_state_publisher',
-        output='screen',
-        parameters=[{
-            'robot_description': robot_description_content,
-            'use_sim_time': True
-        }]
+    # 2. 啟動 robot_state_publisher 節點
+    robot_state_publisher = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(pkg_share, 'launch', 'display.launch.py')
+        ),
+        launch_arguments={
+            'use_sim_time': 'true',
+            'use_gui': 'false',
+            'use_rsp': 'true',
+            'use_rviz': 'false',
+            }.items()
     )
 
     # 5. 啟動 Gazebo Sim
@@ -48,7 +46,9 @@ def generate_launch_description():
         PythonLaunchDescriptionSource(
             os.path.join(ros_gz_sim_share, 'launch', 'gz_sim.launch.py')
         ),
-        launch_arguments={'gz_args': '-r /home/lihsun/physical_ai_project/src/JetRover/jetrover_description/worlds/livingroom.sdf'}.items(),
+        launch_arguments={
+            'gz_args': '-r /home/lihsun/physical_ai_project/src/JetRover/jetrover_description/worlds/livingroom.sdf'
+            }.items(),
     )
 
     # 6. 透過 ros_gz_sim 在 Gazebo 中生成機器人
@@ -68,7 +68,7 @@ def generate_launch_description():
         executable='parameter_bridge',
         arguments=[
             # cmd_vel 需要雙向控制，保持 @
-            '/cmd_vel_twist@geometry_msgs/msg/Twist@gz.msgs.Twist',
+            '/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
             # 里程計、雷達與關節狀態只需要 GZ -> ROS (改用 [ 符號)
             '/odom@nav_msgs/msg/Odometry[gz.msgs.Odometry',
             '/scan@sensor_msgs/msg/LaserScan[gz.msgs.LaserScan',
@@ -76,7 +76,16 @@ def generate_launch_description():
             '/joint_states@sensor_msgs/msg/JointState[gz.msgs.Model',
             '/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock',
         ],
-        output='screen'
+        output='screen',
+        condition=UnlessCondition(use_nav2)
+    )
+
+    ros_gz_bridge_nav2 = Node(
+        package='ros_gz_bridge',
+        executable='parameter_bridge',
+        parameters=[{'config_file': ros_gz_bridge_nav2_config_file}],
+        output='screen',
+        condition=IfCondition(use_nav2)
     )
 
     # 7. ros2_control Controller Spawner 節點
@@ -101,7 +110,7 @@ def generate_launch_description():
         output='screen'
     )
 
-    rviz_config_file = os.path.join(pkg_share, 'rviz', 'view.rviz')
+    rviz_config_file = os.path.join(pkg_share, 'rviz', 'gazebo.rviz')
     rviz_args = ['-d', rviz_config_file] if os.path.exists(rviz_config_file) else []
     
     rviz_node = Node(
@@ -115,12 +124,12 @@ def generate_launch_description():
 
     return LaunchDescription([
         set_gz_resource_path,
-        set_lidar_env,
-        set_machine_env,
+        use_nav2_arg,
         gazebo,
         robot_state_publisher,
         spawn_robot,
         ros_gz_bridge,
+        ros_gz_bridge_nav2,
         # joint_state_broadcaster_spawner,
         # arm_controller_spawner,
         # gripper_controller_spawner
